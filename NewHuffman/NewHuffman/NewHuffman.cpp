@@ -47,26 +47,19 @@ void BubbleSort(pnode* t,int tsize) {
 	}
 	
 	pair<char, int >temp;
-	cout << test.size() << endl;
+	
 	for (int i = 0; i < tsize-1; i++) 
 		for (int j = tsize-1 - 1; j >= i; j--) {
 		temp = test[j];
 		
-		test.erase(test.begin()+j);
-		//for (int j = 0; j < test.size(); j++)
-		//	std::cout << j << "  " << test[j].first << "   " << test[j].second << endl;
-		
-		if (temp.second>test[j].second) {
-			test.insert(test.begin() + j, temp);
+		if (test[j].second != test[j + 1].second) {
+			test.erase(test.begin() + j);
+
+			if (temp.second > test[j].second)
+				test.insert(test.begin() + j, temp);
+			else
+				test.insert(test.begin() + (j + 1), temp);
 		}
-		else {
-			/*pair<char, int >temp1;
-			temp1 = temp;
-			temp = test[i];
-			test[i] = temp1;*/
-			test.insert(test.begin() + (j+1), temp);
-		}
-	
 	}
 	for (int i = 0; i < test.size(); i++){
 		t[i].ch = test[i].first;
@@ -133,7 +126,7 @@ private:
 	unordered_map<char, string> codes; // codeword for each char
 
 public:
-	void Encode(const char* inputFilename, const char* outputFilename)
+	void Encode(const char* inputFilename, const char* outputFilename, int streamNumber, int sortType,int dataBlockNumber)
 	{
 		unordered_map<char, int> freqs; // frequency for each char from input text
 		int i;
@@ -149,8 +142,15 @@ public:
 		char ch; // char
 		while (fscanf(inputFile, "%c", &ch) != EOF)
 			freqs[ch]++;
-		tsize =  freqs.size();
-		
+
+		if (sortType) {
+			tsize = 256;
+		}
+		else {
+			tsize = freqs.size();
+		}
+
+
 		//  Building decreasing freqs table
 		//
 		ptable = new pnode[tsize];
@@ -165,170 +165,164 @@ public:
 			ptable[i].ch = (*fi).first;
 			ptable[i].p = (*fi).second;// / ftot;
 		}
-
-				
-		//	sort(ptable, tsize, 0);
+		//Sort by chars
 		qsort(ptable, tsize, sizeof(pnode), pnode_compare);
-		for (int i = 0; i < tsize; i++) {
-			cout << ptable[i].ch << "  " << unsigned int(ptable[i].ch) << "  " << ptable[i].p << endl;
+		//Sort by frequency
+		if (sortType) {
+			sort(ptable, tsize, 0);
+		}
+		else {
+			BubbleSort(ptable, tsize);
 		}
 
-		BubbleSort(ptable, tsize);
-		cout << "After Bubble" << endl;
-		for (int i = 0; i < tsize; i++) {
-			cout << ptable[i].ch << "  " << unsigned int(ptable[i].ch) << "  " << ptable[i].p << endl;
-		}
-
-		
-		EncHuffman();
+		EncHuffman(dataBlockNumber);
 
 		//  Opening output file
-		//
 		FILE* outputFile;
 		outputFile = fopen(outputFilename, "wb");
 		assert(outputFile);
 
 		//  Outputing ptable and codes
-		//
-		printf("%i" NL, tsize);
-		fprintf(outputFile, "%i" NL, tsize);
+		//printf("%i" NL, tsize);
+		//fprintf(outputFile, "%i" NL, tsize);
+		if (sortType) {
+			printf("__________BITONIC SORT__________\n" );
+			fprintf(outputFile, "__________BITONIC SORT__________\n");
+		}
+		else {
+			printf("___________BUBBLE SORT___________\n");
+			fprintf(outputFile, "___________BUBBLE SORT___________\n");
+		}
+		int lettersCounter = 0;
 		for (i = 0; i < tsize; i++)
 		{
-			printf("%c\t%d\t%X\t%d\t%s" NL, ptable[i].ch, unsigned int(ptable[i].ch), unsigned int(ptable[i].ch), ptable[i].p, codes[ptable[i].ch].c_str());
-			fprintf(outputFile, "%c\t%d\t%X\t%d\t%s" NL, ptable[i].ch, unsigned int(ptable[i].ch), unsigned int(ptable[i].ch), ptable[i].p, codes[ptable[i].ch].c_str());
+			if (ptable[i].p != 0) {
+				printf("%d   %c\t%d\t%X\t%d\t%s" NL, lettersCounter+1, ptable[i].ch, unsigned int(ptable[i].ch), unsigned int(ptable[i].ch), ptable[i].p, codes[ptable[i].ch].c_str());
+				fprintf(outputFile, "%d   %c\t%d\t%X\t%d\t%s" NL, lettersCounter+1, ptable[i].ch, unsigned int(ptable[i].ch), unsigned int(ptable[i].ch), ptable[i].p, codes[ptable[i].ch].c_str());
+				lettersCounter++;
+			}
 		}
 
 		//  Outputing encoded text
-		//
+
 		fseek(inputFile, SEEK_SET, 0);
 		printf(NL);
 		fprintf(outputFile, NL);
-		vector<string> totalString, evenString,oddString,evenOutputString,oddOutputString;
+		vector<string> charStream;
+		vector<vector<string>> StringsArr;
+		vector<string> StringsArr32;
+
+		StringsArr.resize(streamNumber);
+		StringsArr32.resize(streamNumber);
+
 		while (fscanf(inputFile, "%c", &ch) != EOF)
-			totalString.push_back(codes[ch].c_str());
+			charStream.push_back(codes[ch].c_str());
 
-		for (int z = 0; z < totalString.size(); z++)
-		{
-			if (z % 2 == 0)
-				evenString.push_back(totalString[z]);
-			else
-				oddString.push_back(totalString[z]);
-		}
-		string totlaEvenString,totalOddString;
-		for (int i = 0; i < evenString.size(); i++) {
-			totlaEvenString += evenString[i];
-		}
-		for (int i = 0; i < oddString.size(); i++) {
-			totalOddString += oddString[i];
+		//Division into streams
+		for (int j = 0; j < streamNumber; j++)
+			for (int z = j; z < charStream.size(); z += streamNumber)
+				StringsArr[j].push_back(charStream[z]);
+
+		//Stream lines formation
+		for (int z = 0; z < streamNumber; z++)
+			for (int j = 0; j < StringsArr[z].size(); j++)
+				StringsArr32[z] += StringsArr[z][j];
+
+		//Checking strings for 32-bit multiplicity
+		for (int z = 0; z < streamNumber; z++) {
+			if (StringsArr32[z].size() % 32 != 0)
+				for (int k = 0; k < StringsArr32[z].size() % 32; k++)
+					StringsArr32[z] += '0';
 		}
 
-		int max = totalOddString.size();
-		if (totlaEvenString.size() > totalOddString.size())
-			max = totlaEvenString.size();
-		
-		fprintf(outputFile, "FIRST STREAM\t\t\tSECOND STREAM\n");
-		for (int i = 0; i < max; i += 32) {
-			string evenNullreplace, oddNullReplace;
-			for (int j = i; j < i + 32; j++) {
-				if (totlaEvenString[j] == NULL)
-					totlaEvenString[j] = '0';
-				fprintf(outputFile, "%c", totlaEvenString[j]);
-				evenNullreplace += totlaEvenString[j];
+		//Searching the longest string
+		int maxLength = StringsArr32[0].size();
+		for (int z = 1; z < streamNumber; z++) {
+			if (maxLength < StringsArr32[z].size())
+				maxLength = StringsArr32[z].size();
+		}
+
+		//Reducing strings to the same size (max)
+		for (int z = 0; z < streamNumber; z++) {
+			int k = maxLength - StringsArr32[z].size();
+			for (int i = 0; i < k; i++) {
+				StringsArr32[z] += "0";
 			}
-			evenOutputString.push_back(evenNullreplace);
-			fprintf(outputFile, "\t");
-			for (int j = i; j < i + 32; j++) {
-				if (totalOddString[j] == NULL)
-					totalOddString[j] = '0';
-				fprintf(outputFile, "%c", totalOddString[j]);
-				oddNullReplace += totalOddString[j];
+		}
+
+		//Printing in columns
+		fprintf(outputFile, "________STREAM NUMBER: %d________\n", streamNumber);
+		for (int i = 0; i < StringsArr32[0].size(); i += 32) {
+			for (int z = 0; z < streamNumber; z++) {
+				for (int j = i; j < i + 32; j++) {
+					fprintf(outputFile, "%c", StringsArr32[z][j]);
+				}
+				fprintf(outputFile, "\t");
 			}
-			oddOutputString.push_back(oddNullReplace);
 			fprintf(outputFile, "\n");
 		}
-		
-		fprintf(outputFile, "HEX\n");
-		fprintf(outputFile, "FIRST STREAM   SECOND STREAM\n");
-		for (int i = 0; i < evenOutputString.size(); i++) {
-			bitset<32> evenSet(evenOutputString[i]);
-			fprintf(outputFile, "%08X", evenSet.to_ullong());
-			fprintf(outputFile, "\t");
-			bitset<32> oddSet(oddOutputString[i]);
-			fprintf(outputFile, "%08X", oddSet.to_ullong());
-			fprintf(outputFile, "\n");
-		}
-		
-		
+
 		printf(NL);
 		//  Cleaning
-		//
 		codes.clear();
 		delete[] ptable;
 
 		//  Closing files
-		//
 		fclose(outputFile);
 		fclose(inputFile);
 	}
 
-	void Decode(const char* inputFilename, const char* outputFilename)
-	{
-		//  Opening input file
-		//
-		FILE* inputFile;
-		inputFile = fopen(inputFilename, "r");
-		assert(inputFile);
-
-		//  Loading codes
-		//
-		fscanf(inputFile, "%i", &tsize);
-		char ch, code[128];
-		float p;
-		int i;
-		fgetc(inputFile); // skip end line
-		for (i = 0; i < tsize; i++)
-		{
-			ch = fgetc(inputFile);
-			fscanf(inputFile, "%f %s", &p, code);
-			codes[ch] = code;
-			fgetc(inputFile); // skip end line
-		}
-		fgetc(inputFile); // skip end line
-
-		//  Opening output file
-		//
-		FILE* outputFile;
-		outputFile = fopen(outputFilename, "w");
-		assert(outputFile);
-
-		//  Decoding and outputing to file
-		//
-		string accum = "";
-		unordered_map<char, string>::iterator ci;
-		while ((ch = fgetc(inputFile)) != EOF)
-		{
-			accum += ch;
-			for (ci = codes.begin(); ci != codes.end(); ++ci)
-				if (!strcmp((*ci).second.c_str(), accum.c_str()))
-				{
-					accum = "";
-					printf("%c", (*ci).first);
-					fprintf(outputFile, "%c", (*ci).first);
-				}
-		}
-		printf(NL);
-
-		//  Cleaning
-		//
-		fclose(outputFile);
-		fclose(inputFile);
-	}
+	//void Decode(const char* inputFilename, const char* outputFilename)
+	//{
+	//	//  Opening input file
+	//	FILE* inputFile;
+	//	inputFile = fopen(inputFilename, "r");
+	//	assert(inputFile);
+	//	//  Loading codes
+	//	fscanf(inputFile, "%i", &tsize);
+	//	char ch, code[128];
+	//	float p;
+	//	int i;
+	//	fgetc(inputFile); // skip end line
+	//	for (i = 0; i < tsize; i++)
+	//	{
+	//		ch = fgetc(inputFile);
+	//		fscanf(inputFile, "%f %s", &p, code);
+	//		codes[ch] = code;
+	//		fgetc(inputFile); // skip end line
+	//	}
+	//	fgetc(inputFile); // skip end line
+	//	//  Opening output file
+	//	//
+	//	FILE* outputFile;
+	//	outputFile = fopen(outputFilename, "w");
+	//	assert(outputFile);
+	//	//  Decoding and outputing to file
+	//	//
+	//	string accum = "";
+	//	unordered_map<char, string>::iterator ci;
+	//	while ((ch = fgetc(inputFile)) != EOF)
+	//	{
+	//		accum += ch;
+	//		for (ci = codes.begin(); ci != codes.end(); ++ci)
+	//			if (!strcmp((*ci).second.c_str(), accum.c_str()))
+	//			{
+	//				accum = "";
+	//				printf("%c", (*ci).first);
+	//				fprintf(outputFile, "%c", (*ci).first);
+	//			}
+	//	}
+	//	printf(NL);
+	//	//  Cleaning
+	//	//
+	//	fclose(outputFile);
+	//	fclose(inputFile);
+	//}
 
 private:
-	void EncHuffman()
+	void EncHuffman(int dataBlockNumber)
 	{
 		//  Creating leaves (initial top-nodes)
-		//
 		treenode* n;
 		vector<treenode*> tops; // top-nodes
 		int i, numtop = tsize;
@@ -346,9 +340,8 @@ private:
 		//  Building binary tree.
 		//  Combining last two nodes, replacing them by new node
 		//  without invalidating sort
-		//
 		ofstream firstStep;
-		firstStep.open("treeBuilding.txt");
+		firstStep.open("treeBuilding_"+ to_string(dataBlockNumber) +".txt");
 		while (numtop > 1)
 		{
 			n = new treenode;
@@ -383,12 +376,10 @@ private:
 		}
 		firstStep.close();
 		//  Building codes
-		//
 		treenode* root = tops[0];
 		GenerateCode(root);
 
 		//  Cleaning
-		//
 		DestroyNode(root);
 		tops.clear();
 	}
@@ -444,100 +435,111 @@ int show_usage() {
 
 int main(int argc, char** argv)
 {
-	int i = 1;
 	int dFlag = 0;
+	int streamNumber = 1;
+	int sortType = 0;
 	char inputFilename[128];
 	char outputFilename[128];
 
 	printf(NL);
 
-	if (i == argc) show_usage();
-
-	if (strcmp(argv[i], "-d") == 0) {
-		dFlag = 1;
-		i++;
-		if (i == argc) show_usage();
-	}
-
-	strcpy(inputFilename, argv[i]);
-	i++;
-
-	if (i < argc) {
-		strcpy(outputFilename, argv[i]);
-	}
-	else {
-		if (dFlag) {
-			strcpy(outputFilename, "decoded.txt");
-		}
-		else {
-			strcpy(outputFilename, "encoded.txt");
-		}
-	}
-
 	setlocale(LC_ALL, "Russian");
+	strcpy(inputFilename, argv[1]);
+	for (uint_fast16_t i = 2; i < argc; i++) {
+		if (strcmp(argv[i], "-i") == 0) {
+			cout << endl << endl;
+			cout << ">>--------------------------   Info   --------------------------<<" << endl;
+			cout << ">>  -i     |  Информация о параметрах                           <<" << endl;
+			cout << ">>  -s     |  Количество потоков                                <<" << endl;
+			cout << ">>  -t     |  Сортировка Бэтчера (по умолчанию \"пузырьком\")     <<" << endl;
+			cout << ">>--------------------------------------------------------------<<" << endl;
+			cout << endl;
+			return 0;
+		}
+
+		if (strcmp(argv[i], "-d") == 0) {
+			dFlag = 1;
+		}
+		if (strcmp(argv[i], "-t") == 0) {
+			sortType = 1;
+		}
+		if (strcmp(argv[i], "-s") == 0) {
+			if (argv[i + 1][0] != '-')
+				sscanf_s(argv[i + 1], "%d", &streamNumber);
+		}
+	}
+
+	//if (dFlag) {
+	//	strcpy(outputFilename, "decoded.txt");
+	//}
+	//else {
+	//strcpy(outputFilename, "encoded.txt");
+	//}
+
 	string text = "";
+
 	ifstream fin(inputFilename);
-	ofstream filePart;
-	filePart.open("StandartDataPart.txt");
+	vector<ofstream> filePart;
+	filePart.resize(1);
+	filePart[0].open("StandartDataPart_0.txt");
 	string buff;
 	int temp;
-	vector<char> charArray;
-	/*if (fin.is_open())
-		for (int i = 0; i < 65536; )
-		{
-			getline(fin, buff);
-			filePart << buff;
-			for (int j = 0; j < buff.size(); j++)
-			{
-				charArray.push_back(buff[j]);
-				i++;
-			}
-		}
-	fin.close();*/
-	i = 0;
+	vector<vector<char>> charArray;
+	charArray.resize(1);
+	int fileCounter = 0;
 	if (fin.is_open()) {
 		while (getline(fin, buff)) {
-			for (int j = 0; j < buff.size(); j++)
-				if (charArray.size() < 65536) {
-					charArray.push_back(buff[j]);
-					filePart << buff[j];
-				}else
-					break;
 			
+			for (int j = 0; j < buff.size(); j++)
+				if (charArray[fileCounter].size() < 65536) {
+					charArray[fileCounter].push_back(buff[j]);
+					filePart[fileCounter] << buff[j];
+				}
+				else {
+					fileCounter++;
+					charArray.resize(charArray.size()+1);
+					filePart.resize(filePart.size() + 1);
+					filePart[fileCounter].open("StandartDataPart_"+to_string(fileCounter)+".txt");
+					break;
+				}
 		}
 	}
 	else {
 		printf("Can't open File!\n");
+		return 0;
 	}
-	printf("CHAR ARRAY SIZE: %d\n",charArray.size());
+	cout << fileCounter << endl;
 	fin.close();
-	filePart.close();
-	ofstream fileHex;
-	string t1 = "StandartDataPart.txt";
-	fileHex.open("StandartDataHEX.txt");
-	for (int i = 0; i < charArray.size(); i++)
-		fileHex << hex << ((uint32_t)charArray[i] & 0x000000FF) << endl;
-	fileHex.close();
+	filePart[0].close();
 
-	strcpy(inputFilename, t1.c_str());
-	//  Calling encoding or decoding subroutine
-	//
-	Coder* coder;
-	coder = new Coder;
-	assert(coder);
-	if (!dFlag) {
-		coder->Encode(inputFilename, outputFilename);
+	for (int j = 0; j < fileCounter+1; j++) {
+		
+		ofstream fileHex;
+		fileHex.open("StandartDataHEX_" + to_string(j) + ".txt");
+		for (int i = 0; i < charArray[j].size(); i++)
+			fileHex << hex << ((uint32_t)charArray[j][i] & 0x000000FF) << endl;
+		fileHex.close();
+
+		string t1 = "StandartDataPart_" + to_string(j) + ".txt";
+		strcpy(inputFilename, t1.c_str());
+		string t2 = "encoded_" + to_string(j) + ".txt";
+		strcpy(outputFilename, t2.c_str());
+		//  Calling encoding or decoding subroutine
+		Coder* coder;
+		coder = new Coder;
+		assert(coder);
+		if (!dFlag) {
+			coder->Encode(inputFilename, outputFilename, streamNumber, sortType,j);
+		}
+		//else {
+		//	coder->Decode(inputFilename, outputFilename);
+		//}
+
+		delete coder;
+
+		printf(NL);
+
+		ofstream filetest;
 	}
-	else {
-		coder->Decode(inputFilename, outputFilename);
-	}
-
-	delete coder;
-	
-	printf(NL);
-
-
-
-
 	return 0;
 }
