@@ -5,8 +5,8 @@ C:\Users\leont\source\repos\LeontyevAnton\Huffman\NewHuffman\NewHuffman\NewHuffm
 C:\Users\leont\source\repos\LeontyevAnton\Huffman\NewHuffman\NewHuffman\NewHuffman.cpp(534,30): warning C4018: <: несоответствие типов со знаком и без знака
 C:\Users\leont\source\repos\LeontyevAnton\Huffman\NewHuffman\NewHuffman\NewHuffman.cpp(585,6): warning C4101: temp: неиспользованная локальная переменная
   Создание кода
-  46 of 1220 functions ( 3.8%) were compiled, the rest were copied from previous compilation.
-    1 functions were new in current compilation
-    71 functions had inline decision re-evaluated but remain unchanged
+  1 of 1220 functions (<0.1%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    0 functions had inline decision re-evaluated but remain unchanged
   Создание кода завершено
   NewHuffman.vcxproj -> C:\Users\leont\Source\Repos\LeontyevAnton\Huffman\NewHuffman\x64\Release\NewHuffman.exe

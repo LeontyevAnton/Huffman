@@ -278,7 +278,7 @@ public:
 					}
 				}
 				mems.open("Out Mems\\mems_" + to_string(z) + ".txt");
-				mems << "MEMORY_INITIALIZATION_RADIX=2;\nMEMORY_INITIALIZATION_VECTOR = \n";
+				mems<<"MEMORY_INITIALIZATION_RADIX=2;\nMEMORY_INITIALIZATION_VECTOR = \n";
 				mems << tempOut;
 				mems.close();
 			}
@@ -505,7 +505,7 @@ int main(int argc, char** argv)
 	int streamNumber = 1;
 	int sortType = 0;
 	int memFormat = 0;
-	int packSize =500;
+	int packSize =100;
 	char inputFilename[128];
 	char outputFilename[128];
 
@@ -586,25 +586,28 @@ int main(int argc, char** argv)
 	vector<vector<char>> charArray;
 	charArray.resize(1);
 	int fileCounter = 0;
+
 	if (fin.is_open()) {
 		while (getline(fin, buff)) {
-			if (packSize > fileCounter)
-			for (int j = 0; j < buff.size(); j++)
-				
-				if (charArray[fileCounter].size() < 65536) {
-					charArray[fileCounter].push_back(buff[j]);
-					filePart[fileCounter] << buff[j];
-				}
-				else {
-					fileCounter++;
-					charArray.resize(charArray.size() + 1);
-					filePart.resize(filePart.size() + 1);
-					if (packSize > fileCounter)
-						filePart[fileCounter].open("Standart Data Parts\\StandartDataPart_" + to_string(fileCounter) + ".txt");
-					break;
-				}
-				else
-					break;
+			if (packSize > fileCounter) {
+				for (int j = 0; j < buff.size(); j++)
+					if (charArray[fileCounter].size() < 65536) {
+						charArray[fileCounter].push_back(buff[j]);
+						filePart[fileCounter] << buff[j];
+					}
+					else {
+						filePart[fileCounter].close();
+						fileCounter++;
+						charArray.resize(charArray.size() + 1);
+						filePart.resize(filePart.size() + 1);
+						if (packSize > fileCounter)
+							filePart[fileCounter].open("Standart Data Parts\\StandartDataPart_" + to_string(fileCounter) + ".txt");
+						//break;
+					}
+			}
+			else {
+				break;
+			}
 		}
 	}
 	else {
@@ -612,8 +615,8 @@ int main(int argc, char** argv)
 		return 0;
 	}
 	fin.close();
-	filePart[0].close();
-
+	
+	cout << "***" << fileCounter << endl;
 	for (int j = 0; j < fileCounter; j++) {
 		ofstream fileHex;
 		fileHex.open("Standart Data Parts Hex\\StandartDataHEX_" + to_string(j) + ".txt");
