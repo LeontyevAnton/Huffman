@@ -1,0 +1,8 @@
+﻿  NewHuffman.cpp
+C:\Users\leont\source\repos\LeontyevAnton\Huffman\NewHuffman\NewHuffman\NewHuffman.cpp(150,1): warning C4267: =: преобразование из "size_t" в "int"; возможна потеря данных
+C:\Users\leont\source\repos\LeontyevAnton\Huffman\NewHuffman\NewHuffman\NewHuffman.cpp(239,1): warning C4267: инициализация: преобразование из "size_t" в "int"; возможна потеря данных
+C:\Users\leont\source\repos\LeontyevAnton\Huffman\NewHuffman\NewHuffman\NewHuffman.cpp(242,1): warning C4267: =: преобразование из "size_t" в "int"; возможна потеря данных
+C:\Users\leont\source\repos\LeontyevAnton\Huffman\NewHuffman\NewHuffman\NewHuffman.cpp(247,1): warning C4267: инициализация: преобразование из "size_t" в "int"; возможна потеря данных
+C:\Users\leont\source\repos\LeontyevAnton\Huffman\NewHuffman\NewHuffman\NewHuffman.cpp(466,30): warning C4018: <: несоответствие типов со знаком и без знака
+C:\Users\leont\source\repos\LeontyevAnton\Huffman\NewHuffman\NewHuffman\NewHuffman.cpp(500,6): warning C4101: temp: неиспользованная локальная переменная
+  NewHuffman.vcxproj -> C:\Users\leont\Source\Repos\LeontyevAnton\Huffman\NewHuffman\x64\Debug\NewHuffman.exe

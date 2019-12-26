@@ -12,6 +12,7 @@
 #include <cassert>
 #include <iostream>
 #include <bitset>
+#include <direct.h>
 #include <algorithm>
 
 using namespace std;
@@ -126,7 +127,7 @@ private:
 	unordered_map<char, string> codes; // codeword for each char
 
 public:
-	void Encode(const char* inputFilename, const char* outputFilename, int streamNumber, int sortType,int dataBlockNumber)
+	void Encode(const char* inputFilename, const char* outputFilename, int streamNumber, int sortType,int dataBlockNumber,int memFormat, int fileCounter)
 	{
 		unordered_map<char, int> freqs; // frequency for each char from input text
 		int i;
@@ -193,6 +194,8 @@ public:
 			printf("___________BUBBLE SORT___________\n");
 			fprintf(outputFile, "___________BUBBLE SORT___________\n");
 		}
+
+
 		int lettersCounter = 0;
 		for (i = 0; i < tsize; i++)
 		{
@@ -229,39 +232,101 @@ public:
 				StringsArr32[z] += StringsArr[z][j];
 
 		//Checking strings for 32-bit multiplicity
-		for (int z = 0; z < streamNumber; z++) {
-			if (StringsArr32[z].size() % 32 != 0)
-				for (int k = 0; k < StringsArr32[z].size() % 32; k++)
-					StringsArr32[z] += '0';
-		}
+		//for (int z = 0; z < streamNumber; z++) {
+		//	if (StringsArr32[z].size() % 32 != 0)
+		//		for (int k = 0; k < StringsArr32[z].size() % 32; k++)
+		//			StringsArr32[z] += '0';
+		//}
 
 		//Searching the longest string
-		int maxLength = StringsArr32[0].size();
-		for (int z = 1; z < streamNumber; z++) {
-			if (maxLength < StringsArr32[z].size())
-				maxLength = StringsArr32[z].size();
-		}
+		//int maxLength = StringsArr32[0].size();
+		//for (int z = 1; z < streamNumber; z++) {
+		//	if (maxLength < StringsArr32[z].size())
+		//		maxLength = StringsArr32[z].size();
+		//}
 
 		//Reducing strings to the same size (max)
-		for (int z = 0; z < streamNumber; z++) {
-			int k = maxLength - StringsArr32[z].size();
-			for (int i = 0; i < k; i++) {
-				StringsArr32[z] += "0";
-			}
-		}
+		//for (int z = 0; z < streamNumber; z++) {
+		//	int k = maxLength - StringsArr32[z].size();
+		//	for (int i = 0; i < k; i++) {
+		//		StringsArr32[z] += "0";
+		//	}
+		//}
 
 		//Printing in columns
-		fprintf(outputFile, "________STREAM NUMBER: %d________\n", streamNumber);
-		for (int i = 0; i < StringsArr32[0].size(); i += 32) {
+		//fprintf(outputFile, "________STREAM NUMBER: %d________\n", streamNumber);
+		ofstream mems;
+		cout << streamNumber << endl;
+		if (memFormat == 0) {
 			for (int z = 0; z < streamNumber; z++) {
-				for (int j = i; j < i + 32; j++) {
-					fprintf(outputFile, "%c", StringsArr32[z][j]);
-				}
-				fprintf(outputFile, "\t");
-			}
-			fprintf(outputFile, "\n");
-		}
+				
+				int t = ceil(StringsArr32[z].size() / 32);
+				string tempOut;
+				for (int i = 0; i < StringsArr32[z].size(); i += 32) {
 
+					for (int j = i; j < i + 32; j++) {
+						tempOut+=StringsArr32[z][j];
+					}
+					
+					if(i<t*32)
+						tempOut += ",\n";
+				}
+				for (int i = 0; i < tempOut.size(); i++) {
+					if (tempOut[i] == NULL) {
+						tempOut = tempOut.substr(0, i);
+						break;
+					}
+				}
+				mems.open("Out Mems\\mems_" + to_string(z) + ".txt");
+				mems << "MEMORY_INITIALIZATION_RADIX=2;\nMEMORY_INITIALIZATION_VECTOR = \n";
+				mems << tempOut;
+				mems.close();
+			}
+		}
+		else {
+			for (int z = 0; z < streamNumber; z++) {
+
+				int t = ceil(StringsArr32[z].size() / 8);
+				string tempOut;
+				for (int i = 0; i < StringsArr32[z].size(); i += 8) {
+
+					for (int j = i; j < i + 8; j++) {
+						tempOut += StringsArr32[z][j];
+					}
+					
+					if (i < t * 8) {
+						tempOut += ",\n";
+					}
+				}
+
+				/*
+				int t = ceil(StringsArr32[z].size() / 8);
+				cout << "---" << t << endl;
+				string tempOut;
+				for (int i = 0; i < StringsArr32[z].size(); i += 32) {
+
+					for (int j = i; j < i + 32; j += 8) {
+						for (int k = j; k < j + 8; k++)
+							tempOut += StringsArr32[z][k];
+						tempOut += ",\t";
+					}
+
+					if (i < t * 32) {
+						tempOut += "\n";
+					}
+				}
+				*/
+				for (int i = 0; i < tempOut.size(); i++) {
+					if (tempOut[i] == NULL) {
+						tempOut = tempOut.substr(0, i);
+						break;
+					}
+				}
+				mems.open("Out Mems\\mems_" + to_string(z) + ".txt");
+				mems << tempOut;
+				mems.close();
+			}
+		}
 		printf(NL);
 		//  Cleaning
 		codes.clear();
@@ -341,7 +406,8 @@ private:
 		//  Combining last two nodes, replacing them by new node
 		//  without invalidating sort
 		ofstream firstStep;
-		firstStep.open("treeBuilding_"+ to_string(dataBlockNumber) +".txt");
+		
+		firstStep.open("Trees\\treeBuilding_"+ to_string(dataBlockNumber) +".txt");
 		while (numtop > 1)
 		{
 			n = new treenode;
@@ -438,6 +504,8 @@ int main(int argc, char** argv)
 	int dFlag = 0;
 	int streamNumber = 1;
 	int sortType = 0;
+	int memFormat = 0;
+	int packSize =500;
 	char inputFilename[128];
 	char outputFilename[128];
 
@@ -447,14 +515,16 @@ int main(int argc, char** argv)
 	
 	if ((argc == 1)||(strcmp(argv[1], "-i") == 0)){
 		cout << endl << endl;
-		cout << ">>------------------   Информационная панель  ------------------<<" << endl;
-		cout << ">>Формат запуска программы:                                     <<" << endl;
-		cout << ">>      <progName>.exe <inputFile.txt> -param_1 -param_2 ...    <<" << endl;
-		cout << ">>Параметры:                                                    <<" << endl;
-		cout << ">>  -i     |  Информация о параметрах                           <<" << endl;
-		cout << ">>  -s     |  Количество потоков                                <<" << endl;
-		cout << ">>  -t     |  Сортировка Бэтчера (по умолчанию \"пузырьком\")     <<" << endl;
-		cout << ">>--------------------------------------------------------------<<" << endl;
+		cout << ">>-----------------------------   Информационная панель  -----------------------------<<" << endl;
+		cout << ">>Формат запуска программы:                                                           <<" << endl;
+		cout << ">>      <progName>.exe <inputFile.txt> -param_1 -param_2 ...                          <<" << endl;
+		cout << ">>Параметры:                                                                          <<" << endl;
+		cout << ">>  -i     |  Информация о параметрах                                                 <<" << endl;
+		cout << ">>  -s N   |  Количество потоков                                                      <<" << endl;
+		cout << ">>  -t     |  Сортировка Бэтчера (по умолчанию \"пузырьком\")                          <<" << endl;
+		cout << ">>  -p N   |  Количество пакетов данных                                               <<" << endl;
+		cout << ">>  -m     |  Формат вывода данных в память [8 или 32 бита]  (по умолчанию 32 бита)   <<" << endl;
+		cout << ">>------------------------------------------------------------------------------------<<" << endl;
 		cout << endl;
 		return 0;
 	}
@@ -474,6 +544,17 @@ int main(int argc, char** argv)
 			if (argv[i + 1][0] != '-')
 				sscanf_s(argv[i + 1], "%d", &streamNumber);
 		}
+		if (strcmp(argv[i], "-p") == 0) {
+			if (argv[i + 1][0] != '-') {
+				sscanf_s(argv[i + 1], "%d", &packSize);
+			}
+		}
+
+		if (strcmp(argv[i], "-m") == 0) {
+			if (argv[i + 1][0] != '-') {
+				sscanf_s(argv[i + 1], "%d", &memFormat);
+			}
+		}
 	}
 
 	//if (dFlag) {
@@ -483,12 +564,23 @@ int main(int argc, char** argv)
 	//strcpy(outputFilename, "encoded.txt");
 	//}
 
-	string text = "";
+	_rmdir("\\Trees");
+	_rmdir("\\Standart Data Parts");
+	_rmdir("\\Standart Data Parts Hex");
+	_rmdir("\\Encoded Files");
+	_rmdir("\\Out Mems");
 
+	_mkdir("Trees");
+	_mkdir("Standart Data Parts");
+	_mkdir("Standart Data Parts Hex");
+	_mkdir("Encoded Files");
+	_mkdir("Out Mems");
+	string text = "";
+	
 	ifstream fin(inputFilename);
 	vector<ofstream> filePart;
 	filePart.resize(1);
-	filePart[0].open("StandartDataPart_0.txt");
+	filePart[0].open("Standart Data Parts\\StandartDataPart_0.txt");
 	string buff;
 	int temp;
 	vector<vector<char>> charArray;
@@ -496,48 +588,51 @@ int main(int argc, char** argv)
 	int fileCounter = 0;
 	if (fin.is_open()) {
 		while (getline(fin, buff)) {
-			
+			if (packSize > fileCounter)
 			for (int j = 0; j < buff.size(); j++)
+				
 				if (charArray[fileCounter].size() < 65536) {
 					charArray[fileCounter].push_back(buff[j]);
 					filePart[fileCounter] << buff[j];
 				}
 				else {
 					fileCounter++;
-					charArray.resize(charArray.size()+1);
+					charArray.resize(charArray.size() + 1);
 					filePart.resize(filePart.size() + 1);
-					filePart[fileCounter].open("StandartDataPart_"+to_string(fileCounter)+".txt");
+					if (packSize > fileCounter)
+						filePart[fileCounter].open("Standart Data Parts\\StandartDataPart_" + to_string(fileCounter) + ".txt");
 					break;
 				}
+				else
+					break;
 		}
 	}
 	else {
 		printf("Can't open File!\n");
 		return 0;
 	}
-	cout << fileCounter << endl;
 	fin.close();
 	filePart[0].close();
 
-	for (int j = 0; j < fileCounter+1; j++) {
-		
+	for (int j = 0; j < fileCounter; j++) {
 		ofstream fileHex;
-		fileHex.open("StandartDataHEX_" + to_string(j) + ".txt");
+		fileHex.open("Standart Data Parts Hex\\StandartDataHEX_" + to_string(j) + ".txt");
 		for (int i = 0; i < charArray[j].size(); i++)
 			fileHex << hex << ((uint32_t)charArray[j][i] & 0x000000FF) << endl;
 		fileHex.close();
 
-		string t1 = "StandartDataPart_" + to_string(j) + ".txt";
+		string t1 = "Standart Data Parts\\StandartDataPart_" + to_string(j) + ".txt";
 		strcpy(inputFilename, t1.c_str());
-		string t2 = "encoded_" + to_string(j) + ".txt";
+		string t2 = "Encoded Files\\encoded_" + to_string(j) + ".txt";
 		strcpy(outputFilename, t2.c_str());
 		//  Calling encoding or decoding subroutine
 		Coder* coder;
 		coder = new Coder;
 		assert(coder);
-		if (!dFlag) {
-			coder->Encode(inputFilename, outputFilename, streamNumber, sortType,j);
-		}
+		
+		//if (!dFlag) {
+			coder->Encode(inputFilename, outputFilename, streamNumber, sortType,j,memFormat,fileCounter);
+		//}
 		//else {
 		//	coder->Decode(inputFilename, outputFilename);
 		//}
