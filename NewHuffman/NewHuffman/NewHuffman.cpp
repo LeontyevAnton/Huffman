@@ -441,21 +441,28 @@ int main(int argc, char** argv)
 	char inputFilename[128];
 	char outputFilename[128];
 
-	printf(NL);
+	
 
 	setlocale(LC_ALL, "Russian");
+	
+	if ((argc == 1)||(strcmp(argv[1], "-i") == 0)){
+		cout << endl << endl;
+		cout << ">>------------------   Информационная панель  ------------------<<" << endl;
+		cout << ">>Формат запуска программы:                                     <<" << endl;
+		cout << ">>      <progName>.exe <inputFile.txt> -param_1 -param_2 ...    <<" << endl;
+		cout << ">>Параметры:                                                    <<" << endl;
+		cout << ">>  -i     |  Информация о параметрах                           <<" << endl;
+		cout << ">>  -s     |  Количество потоков                                <<" << endl;
+		cout << ">>  -t     |  Сортировка Бэтчера (по умолчанию \"пузырьком\")     <<" << endl;
+		cout << ">>--------------------------------------------------------------<<" << endl;
+		cout << endl;
+		return 0;
+	}
+
 	strcpy(inputFilename, argv[1]);
+
 	for (uint_fast16_t i = 2; i < argc; i++) {
-		if (strcmp(argv[i], "-i") == 0) {
-			cout << endl << endl;
-			cout << ">>--------------------------   Info   --------------------------<<" << endl;
-			cout << ">>  -i     |  Информация о параметрах                           <<" << endl;
-			cout << ">>  -s     |  Количество потоков                                <<" << endl;
-			cout << ">>  -t     |  Сортировка Бэтчера (по умолчанию \"пузырьком\")     <<" << endl;
-			cout << ">>--------------------------------------------------------------<<" << endl;
-			cout << endl;
-			return 0;
-		}
+		
 
 		if (strcmp(argv[i], "-d") == 0) {
 			dFlag = 1;

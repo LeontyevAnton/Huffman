@@ -3,8 +3,8 @@ D:\Работа\Huffman\NewHuffman\NewHuffman\NewHuffman.cpp(150,1): warning C42
 D:\Работа\Huffman\NewHuffman\NewHuffman\NewHuffman.cpp(239,1): warning C4267: инициализация: преобразование из "size_t" в "int"; возможна потеря данных
 D:\Работа\Huffman\NewHuffman\NewHuffman\NewHuffman.cpp(242,1): warning C4267: =: преобразование из "size_t" в "int"; возможна потеря данных
 D:\Работа\Huffman\NewHuffman\NewHuffman\NewHuffman.cpp(247,1): warning C4267: инициализация: преобразование из "size_t" в "int"; возможна потеря данных
-D:\Работа\Huffman\NewHuffman\NewHuffman\NewHuffman.cpp(448,30): warning C4018: <: несоответствие типов со знаком и без знака
-D:\Работа\Huffman\NewHuffman\NewHuffman\NewHuffman.cpp(486,6): warning C4101: temp: неиспользованная локальная переменная
+D:\Работа\Huffman\NewHuffman\NewHuffman\NewHuffman.cpp(464,30): warning C4018: <: несоответствие типов со знаком и без знака
+D:\Работа\Huffman\NewHuffman\NewHuffman\NewHuffman.cpp(493,6): warning C4101: temp: неиспользованная локальная переменная
   Создание кода
   1 of 1213 functions (<0.1%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
