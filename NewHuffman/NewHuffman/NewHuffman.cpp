@@ -4,7 +4,7 @@
 #else
 #define NL "\n"
 #endif
-
+#define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
 #include <fstream>
 #include <string>
 #include <vector>
@@ -13,10 +13,14 @@
 #include <iostream>
 #include <bitset>
 #include <direct.h>
+#include <windows.h>
 #include <algorithm>
 
-using namespace std;
+#include <experimental\filesystem>
 
+
+using namespace std;
+vector<string> test;
 struct pnode
 {
 	unsigned char ch; // char
@@ -40,39 +44,39 @@ struct treenode : public pnode
 	treenode* right; // right child
 };
 
-void BubbleSort(pnode* t,int tsize) {
+void BubbleSort(pnode* t, int tsize) {
 	vector<pair<char, int >>test;
-	
-	for (int i = 0; i < tsize;i++){
+
+	for (int i = 0; i < tsize; i++) {
 		test.push_back(make_pair(t[i].ch, t[i].p));
 	}
-	
-	pair<char, int >temp;
-	
-	for (int i = 0; i < tsize-1; i++) 
-		for (int j = tsize-1 - 1; j >= i; j--) {
-		temp = test[j];
-		
-		if (test[j].second != test[j + 1].second) {
-			test.erase(test.begin() + j);
 
-			if (temp.second > test[j].second)
-				test.insert(test.begin() + j, temp);
-			else
-				test.insert(test.begin() + (j + 1), temp);
+	pair<char, int >temp;
+
+	for (int i = 0; i < tsize - 1; i++)
+		for (int j = tsize - 1 - 1; j >= i; j--) {
+			temp = test[j];
+
+			if (test[j].second != test[j + 1].second) {
+				test.erase(test.begin() + j);
+
+				if (temp.second > test[j].second)
+					test.insert(test.begin() + j, temp);
+				else
+					test.insert(test.begin() + (j + 1), temp);
+			}
 		}
-	}
-	for (int i = 0; i < test.size(); i++){
+	for (int i = 0; i < test.size(); i++) {
 		t[i].ch = test[i].first;
 		t[i].p = test[i].second;
 	}
-	
+
 }
 
 /*The parameter dir indicates the sorting direction, ASCENDING
    or DESCENDING; if (a[i] > a[j]) agrees with the direction,
    then a[i] and a[j] are interchanged.*/
-void compAndSwap(pnode* t, int i, int j, int dir){
+void compAndSwap(pnode* t, int i, int j, int dir) {
 	if (dir == (t[i].p > t[j].p))
 		swap(t[i], t[j]);
 }
@@ -81,7 +85,7 @@ void compAndSwap(pnode* t, int i, int j, int dir){
   if dir = 1, and in descending order otherwise (means dir=0).
   The sequence to be sorted starts at index position low,
   the parameter cnt is the number of elements to be sorted.*/
-void bitonicMerge(pnode*t, int low, int cnt, int dir){
+void bitonicMerge(pnode* t, int low, int cnt, int dir) {
 	if (cnt > 1)
 	{
 		int k = cnt / 2;
@@ -95,7 +99,7 @@ void bitonicMerge(pnode*t, int low, int cnt, int dir){
 /* This function first produces a bitonic sequence by recursively
     sorting its two halves in opposite sorting orders, and then
     calls bitonicMerge to make them in the same order */
-void bitonicSort(pnode*t, int low, int cnt, int dir)
+void bitonicSort(pnode* t, int low, int cnt, int dir)
 {
 	if (cnt > 1)
 	{
@@ -115,7 +119,7 @@ void bitonicSort(pnode*t, int low, int cnt, int dir)
 
 /* Caller of bitonicSort for sorting the entire array of
    length N in ASCENDING order */
-void sort(pnode*t , int N, int up)
+void sort(pnode* t, int N, int up)
 {
 	bitonicSort(t, 0, N, up);
 }
@@ -127,8 +131,7 @@ private:
 	unordered_map<char, string> codes; // codeword for each char
 
 public:
-	void Encode(const char* inputFilename, const char* outputFilename, int streamNumber, int sortType,int dataBlockNumber,int memFormat, int fileCounter)
-	{
+	void Encode(const char* inputFilename, const char* outputFilename, int streamNumber, int sortType, int dataBlockNumber){
 		unordered_map<char, int> freqs; // frequency for each char from input text
 		int i;
 
@@ -187,7 +190,7 @@ public:
 		//printf("%i" NL, tsize);
 		//fprintf(outputFile, "%i" NL, tsize);
 		if (sortType) {
-			printf("__________BITONIC SORT__________\n" );
+			printf("__________BITONIC SORT__________\n");
 			fprintf(outputFile, "__________BITONIC SORT__________\n");
 		}
 		else {
@@ -200,8 +203,8 @@ public:
 		for (i = 0; i < tsize; i++)
 		{
 			if (ptable[i].p != 0) {
-				printf("%d   %c\t%d\t%X\t%d\t%s" NL, lettersCounter+1, ptable[i].ch, unsigned int(ptable[i].ch), unsigned int(ptable[i].ch), ptable[i].p, codes[ptable[i].ch].c_str());
-				fprintf(outputFile, "%d   %c\t%d\t%X\t%d\t%s" NL, lettersCounter+1, ptable[i].ch, unsigned int(ptable[i].ch), unsigned int(ptable[i].ch), ptable[i].p, codes[ptable[i].ch].c_str());
+				printf("%d   %c\t%d\t%X\t%d\t%s" NL, lettersCounter + 1, ptable[i].ch, unsigned int(ptable[i].ch), unsigned int(ptable[i].ch), ptable[i].p, codes[ptable[i].ch].c_str());
+				fprintf(outputFile, "%d   %c\t%d\t%X\t%d\t%s" NL, lettersCounter + 1, ptable[i].ch, unsigned int(ptable[i].ch), unsigned int(ptable[i].ch), ptable[i].p, codes[ptable[i].ch].c_str());
 				lettersCounter++;
 			}
 		}
@@ -255,77 +258,12 @@ public:
 
 		//Printing in columns
 		//fprintf(outputFile, "________STREAM NUMBER: %d________\n", streamNumber);
-		ofstream mems;
-		cout << streamNumber << endl;
-		if (memFormat == 0) {
-			for (int z = 0; z < streamNumber; z++) {
-				
-				int t = ceil(StringsArr32[z].size() / 32);
-				string tempOut;
-				for (int i = 0; i < StringsArr32[z].size(); i += 32) {
-
-					for (int j = i; j < i + 32; j++) {
-						tempOut+=StringsArr32[z][j];
-					}
-					
-					if(i<t*32)
-						tempOut += ",\n";
-				}
-				for (int i = 0; i < tempOut.size(); i++) {
-					if (tempOut[i] == NULL) {
-						tempOut = tempOut.substr(0, i);
-						break;
-					}
-				}
-				mems.open("Out Mems\\mems_" + to_string(z) + ".txt");
-				mems<<"MEMORY_INITIALIZATION_RADIX=2;\nMEMORY_INITIALIZATION_VECTOR = \n";
-				mems << tempOut;
-				mems.close();
-			}
-		}
-		else {
-			for (int z = 0; z < streamNumber; z++) {
-
-				int t = ceil(StringsArr32[z].size() / 8);
-				string tempOut;
-				for (int i = 0; i < StringsArr32[z].size(); i += 8) {
-
-					for (int j = i; j < i + 8; j++) {
-						tempOut += StringsArr32[z][j];
-					}
-					
-					if (i < t * 8) {
-						tempOut += ",\n";
-					}
-				}
-
-				/*
-				int t = ceil(StringsArr32[z].size() / 8);
-				cout << "---" << t << endl;
-				string tempOut;
-				for (int i = 0; i < StringsArr32[z].size(); i += 32) {
-
-					for (int j = i; j < i + 32; j += 8) {
-						for (int k = j; k < j + 8; k++)
-							tempOut += StringsArr32[z][k];
-						tempOut += ",\t";
-					}
-
-					if (i < t * 32) {
-						tempOut += "\n";
-					}
-				}
-				*/
-				for (int i = 0; i < tempOut.size(); i++) {
-					if (tempOut[i] == NULL) {
-						tempOut = tempOut.substr(0, i);
-						break;
-					}
-				}
-				mems.open("Out Mems\\mems_" + to_string(z) + ".txt");
-				mems << tempOut;
-				mems.close();
-			}
+		
+		
+		for (int z = 0; z < streamNumber; z++) {
+			string tempOut;
+			tempOut += StringsArr32[z];
+			test[z] += tempOut;
 		}
 		printf(NL);
 		//  Cleaning
@@ -406,8 +344,8 @@ private:
 		//  Combining last two nodes, replacing them by new node
 		//  without invalidating sort
 		ofstream firstStep;
-		
-		firstStep.open("Trees\\treeBuilding_"+ to_string(dataBlockNumber) +".txt");
+
+		firstStep.open("Trees\\treeBuilding_" + to_string(dataBlockNumber) + ".txt");
 		while (numtop > 1)
 		{
 			n = new treenode;
@@ -505,26 +443,26 @@ int main(int argc, char** argv)
 	int streamNumber = 1;
 	int sortType = 0;
 	int memFormat = 0;
-	int packSize =100;
+	int packSize = 100;
 	char inputFilename[128];
 	char outputFilename[128];
 
-	
+
 
 	setlocale(LC_ALL, "Russian");
-	
-	if ((argc == 1)||(strcmp(argv[1], "-i") == 0)){
+
+	if ((argc == 1) || (strcmp(argv[1], "-i") == 0)) {
 		cout << endl << endl;
-		cout << ">>-----------------------------   Информационная панель  -----------------------------<<" << endl;
-		cout << ">>Формат запуска программы:                                                           <<" << endl;
-		cout << ">>      <progName>.exe <inputFile.txt> -param_1 -param_2 ...                          <<" << endl;
-		cout << ">>Параметры:                                                                          <<" << endl;
-		cout << ">>  -i     |  Информация о параметрах                                                 <<" << endl;
-		cout << ">>  -s N   |  Количество потоков                                                      <<" << endl;
-		cout << ">>  -t     |  Сортировка Бэтчера (по умолчанию \"пузырьком\")                          <<" << endl;
-		cout << ">>  -p N   |  Количество пакетов данных                                               <<" << endl;
-		cout << ">>  -m     |  Формат вывода данных в память [8 или 32 бита]  (по умолчанию 32 бита)   <<" << endl;
-		cout << ">>------------------------------------------------------------------------------------<<" << endl;
+		cout << ">>------------------------------   Информационная панель  ------------------------------<<" << endl;
+		cout << ">>Формат запуска программы:                                                             <<" << endl;
+		cout << ">>        <progName>.exe <inputFile.txt> -param_1 -param_2 ...                          <<" << endl;
+		cout << ">>Параметры:                                                                            <<" << endl;
+		cout << ">>  -i       |  Информация о параметрах                                                 <<" << endl;
+		cout << ">>  -s Число |  Количество потоков                                                      <<" << endl;
+		cout << ">>  -t       |  Сортировка Бэтчера (по умолчанию \"пузырьком\")                          <<" << endl;
+		cout << ">>  -p Число |  Количество пакетов данных                                               <<" << endl;
+		cout << ">>  -m       |  Формат вывода данных в память [8 или 32 бита]  (по умолчанию 32 бита)   <<" << endl;
+		cout << ">>--------------------------------------------------------------------------------------<<" << endl;
 		cout << endl;
 		return 0;
 	}
@@ -532,7 +470,7 @@ int main(int argc, char** argv)
 	strcpy(inputFilename, argv[1]);
 
 	for (uint_fast16_t i = 2; i < argc; i++) {
-		
+
 
 		if (strcmp(argv[i], "-d") == 0) {
 			dFlag = 1;
@@ -551,9 +489,7 @@ int main(int argc, char** argv)
 		}
 
 		if (strcmp(argv[i], "-m") == 0) {
-			if (argv[i + 1][0] != '-') {
-				sscanf_s(argv[i + 1], "%d", &memFormat);
-			}
+			memFormat = 1;
 		}
 	}
 
@@ -564,11 +500,13 @@ int main(int argc, char** argv)
 	//strcpy(outputFilename, "encoded.txt");
 	//}
 
-	_rmdir("\\Trees");
-	_rmdir("\\Standart Data Parts");
-	_rmdir("\\Standart Data Parts Hex");
-	_rmdir("\\Encoded Files");
-	_rmdir("\\Out Mems");
+
+
+	experimental::filesystem::remove_all("Trees");
+	experimental::filesystem::remove_all("Standart Data Parts");
+	experimental::filesystem::remove_all("Standart Data Parts Hex");
+	experimental::filesystem::remove_all("Encoded Files");
+	experimental::filesystem::remove_all("Out Mems");
 
 	_mkdir("Trees");
 	_mkdir("Standart Data Parts");
@@ -576,7 +514,7 @@ int main(int argc, char** argv)
 	_mkdir("Encoded Files");
 	_mkdir("Out Mems");
 	string text = "";
-	
+
 	ifstream fin(inputFilename);
 	vector<ofstream> filePart;
 	filePart.resize(1);
@@ -615,8 +553,8 @@ int main(int argc, char** argv)
 		return 0;
 	}
 	fin.close();
-	
-	cout << "***" << fileCounter << endl;
+	//vector<string>test;
+	test.resize(streamNumber);
 	for (int j = 0; j < fileCounter; j++) {
 		ofstream fileHex;
 		fileHex.open("Standart Data Parts Hex\\StandartDataHEX_" + to_string(j) + ".txt");
@@ -632,19 +570,83 @@ int main(int argc, char** argv)
 		Coder* coder;
 		coder = new Coder;
 		assert(coder);
-		
+
 		//if (!dFlag) {
-			coder->Encode(inputFilename, outputFilename, streamNumber, sortType,j,memFormat,fileCounter);
+		coder->Encode(inputFilename, outputFilename, streamNumber, sortType, j);
 		//}
 		//else {
 		//	coder->Decode(inputFilename, outputFilename);
 		//}
 
 		delete coder;
-
-		printf(NL);
-
-		ofstream filetest;
 	}
+	vector<ofstream> mems;
+	mems.resize(streamNumber);
+	vector<string> memsOut;
+	memsOut.resize(streamNumber);
+	vector<int> powArr;
+	powArr.resize(31);
+	for (int i = 0; i < 31; i++) {
+		powArr[i] = pow(2, i);
+	}
+
+	if (memFormat == 0) {
+
+		for (int i = 0; i < streamNumber; i++) {
+			int strCounter = 0;
+			for (int j = 0; j < test[i].size(); j += 32) {
+				for (int k = j; k < j + 32; k++) {
+					if (test[i][k] != NULL)
+						memsOut[i] += test[i][k];
+					else
+						memsOut[i] += "0";
+				}
+				memsOut[i] += ",\n";
+				strCounter++;
+			}
+
+			for (int j = 0; j < powArr.size(); j++) {
+				if (powArr[j] - strCounter > 0) {
+					for (int k = 0; k < powArr[j] - strCounter - 1; k++) {
+						memsOut[i] += "00000000000000000000000000000000,\n";
+					}
+					memsOut[i] += "00000000000000000000000000000000;\n";
+					break;
+				}
+			}
+		}
+	}
+	else {
+		for (int i = 0; i < streamNumber; i++) {
+			int strCounter = 0;
+			for (int j = 0; j < test[i].size(); j += 8) {
+				for (int k = j; k < j + 8; k++) {
+					if (test[i][k] != NULL)
+						memsOut[i] += test[i][k];
+					else
+						memsOut[i] += "0";
+				}
+				memsOut[i] += ",\n";
+				strCounter++;
+			}
+
+			for (int j = 0; j < powArr.size(); j++) {
+				if (powArr[j] - strCounter > 0) {
+					for (int k = 0; k < powArr[j] - strCounter - 1; k++) {
+						memsOut[i] += "00000000,\n";
+					}
+					memsOut[i] += "00000000;\n";
+					break;
+				}
+			}
+		}
+	}
+	for (int i = 0; i < streamNumber; i++) {
+		mems[i].open("Out Mems\\mems_" + to_string(i) + ".coe");
+		mems[i] << "MEMORY_INITIALIZATION_RADIX=2;\nMEMORY_INITIALIZATION_VECTOR = \n";
+		mems[i] << memsOut[i];
+		mems[i].close();
+	}
+
 	return 0;
 }

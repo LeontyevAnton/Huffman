@@ -1,12 +1,15 @@
 ﻿  NewHuffman.cpp
-C:\Users\leont\source\repos\LeontyevAnton\Huffman\NewHuffman\NewHuffman\NewHuffman.cpp(151,1): warning C4267: =: преобразование из "size_t" в "int"; возможна потеря данных
-C:\Users\leont\source\repos\LeontyevAnton\Huffman\NewHuffman\NewHuffman\NewHuffman.cpp(263,11): warning C4244: инициализация: преобразование "double" в "int", возможна потеря данных
-C:\Users\leont\source\repos\LeontyevAnton\Huffman\NewHuffman\NewHuffman\NewHuffman.cpp(289,11): warning C4244: инициализация: преобразование "double" в "int", возможна потеря данных
-C:\Users\leont\source\repos\LeontyevAnton\Huffman\NewHuffman\NewHuffman\NewHuffman.cpp(534,30): warning C4018: <: несоответствие типов со знаком и без знака
-C:\Users\leont\source\repos\LeontyevAnton\Huffman\NewHuffman\NewHuffman\NewHuffman.cpp(585,6): warning C4101: temp: неиспользованная локальная переменная
+d:\Работа\Huffman\NewHuffman\NewHuffman\NewHuffman.cpp(154,1): warning C4267: =: преобразование из "size_t" в "int"; возможна потеря данных
+d:\Работа\Huffman\NewHuffman\NewHuffman\NewHuffman.cpp(472,30): warning C4018: <: несоответствие типов со знаком и без знака
+d:\Работа\Huffman\NewHuffman\NewHuffman\NewHuffman.cpp(590,18): warning C4244: =: преобразование "double" в "_Ty", возможна потеря данных
+d:\Работа\Huffman\NewHuffman\NewHuffman\NewHuffman.cpp(590,18): warning C4244:         with
+d:\Работа\Huffman\NewHuffman\NewHuffman\NewHuffman.cpp(590,18): warning C4244:         [
+d:\Работа\Huffman\NewHuffman\NewHuffman\NewHuffman.cpp(590,18): warning C4244:             _Ty=int
+d:\Работа\Huffman\NewHuffman\NewHuffman\NewHuffman.cpp(590,18): warning C4244:         ]
+d:\Работа\Huffman\NewHuffman\NewHuffman\NewHuffman.cpp(523,6): warning C4101: temp: неиспользованная локальная переменная
   Создание кода
-  1 of 1220 functions (<0.1%) were compiled, the rest were copied from previous compilation.
+  3 of 1447 functions ( 0.2%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
-    0 functions had inline decision re-evaluated but remain unchanged
+    1 functions had inline decision re-evaluated but remain unchanged
   Создание кода завершено
-  NewHuffman.vcxproj -> C:\Users\leont\Source\Repos\LeontyevAnton\Huffman\NewHuffman\x64\Release\NewHuffman.exe
+  NewHuffman.vcxproj -> D:\Работа\Huffman\NewHuffman\x64\Release\NewHuffman.exe
